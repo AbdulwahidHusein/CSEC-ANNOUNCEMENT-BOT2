@@ -105,10 +105,10 @@ async def handle_message(message: dict):
     if text in commands:
         return await handle_command(text, chat_id, user_id)
 
-    if state.get("state") == "add_admin":
+    if state and state.get("state") == "add_admin":
         return await handle_admin_addition(message, user_id, chat_id)
 
-    if state.get("state") == "broadcast":
+    if state and state.get("state") == "broadcast":
         return await handle_broadcast(message, chat_id)
 
     await bot.send_message(chat_id=chat_id, text=f"I don't understand what you are saying, {message['from']['first_name']}")
@@ -141,7 +141,7 @@ async def handle_callback_query(callback_query: dict):
         
         if forwarded_groups:
             response = "Message forwarded to the following groups:\n" + ", ".join(
-                [f"{group['title']} (@{group.get('username', 'NA')})\n" for group in forwarded_groups]
+                [f"{group['title']} (@{group.get('username', 'NA')})\n" for group in forwarded_groups if group]
             )
             await bot.send_message(chat_id=from_id, text=response)
         

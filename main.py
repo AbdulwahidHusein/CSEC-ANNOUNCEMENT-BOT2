@@ -36,6 +36,8 @@ app = FastAPI(lifespan=lifespan)
 @app.middleware("http")
 async def verify_telegram_secret_token(request: Request, call_next):
     """Middleware to verify Telegram's secret token in incoming requests."""
+    
+    
     secret_token = request.headers.get("X-Telegram-Bot-Api-Secret-Token")
     
     if secret_token != config.WEBHOOK_SECRET_KEY:

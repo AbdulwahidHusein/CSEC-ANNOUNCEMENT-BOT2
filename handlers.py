@@ -21,6 +21,7 @@ async def handle_command(text, chat_id, user_id):
     if text == "/groups":
         groups = load_groups()
         await send_group_list(chat_id, groups)
+        
         return {"status": "ok", "message": "Groups list sent"}
 
     if text == "/broadcast":
@@ -145,4 +146,4 @@ async def handle_callback_query(callback_query: dict):
             await bot.send_message(chat_id=from_id, text=response)
         
         delete_user_state(from_id)
-        return {"status": "ok", "message": "Message forwarded to all groups"}
+        return {"status": "ok", "message": "Message forwarded to all groups"}    

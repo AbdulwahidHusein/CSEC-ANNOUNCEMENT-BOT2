@@ -15,7 +15,8 @@ def send_group_list(chat_id, groups):
     header = "<b>Here are the groups that I can forward messages to:</b>\n\n"
     if not groups:
         return bot.send_message(chat_id=chat_id, text="There are no groups to display.\n add me to groups you want to broadcast to")
-    group_list = "\n".join([f"Title: {group['title']} | Username: @{group.get('username') if group.get('username') else "private"}" for group in groups])
+    group_list = "\n".join([f"Title: {group['title']} | Username: @{group.get('username') if group.get('username') else 'private'}" for group in groups])
+
     return bot.send_message(chat_id=chat_id, text=header + group_list, parse_mode="HTML")
 
 def send_broadcast_prompt(chat_id):

@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 from models import TelegramWebhook
 from handlers import handle_message, handle_callback_query
+from db import add_group
 import config
 from telegram import Bot
 from logging import getLogger, StreamHandler, Formatter
@@ -53,7 +54,11 @@ async def forward_message(data: TelegramWebhook):
             await handle_callback_query(data.callback_query)
             logger.info("Callback query handled successfully")
             return {"status": "ok", "message": "Callback query handled"}
-
+        
+        if data.message and data.message.get("new_chat_participant"):
+            group_data = data.message["chat"]
+            add_group(group_data)
+        
         if data.message:
             message = data.message
             await handle_message(message)

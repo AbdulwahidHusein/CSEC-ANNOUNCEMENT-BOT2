@@ -9,7 +9,16 @@ groups_collection = db["groups"]
 admin_collection = db["admins"]
 state_collection = db["state"] 
 
-# Group management
+# Group management 
+
+def add_group(group: dict):   
+    data = {
+        "id": group['id'], 
+        "title": group['title'],
+        "username": group.get('username', None)  
+    }
+    groups_collection.update_one({"id": group['id']}, {"$set": data}, upsert=True)
+    
 def load_groups():
     return list(groups_collection.find({}))
 

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, Path
 from fastapi.responses import JSONResponse
 from models import TelegramWebhook
 from handlers import handle_message, handle_callback_query
@@ -48,7 +48,7 @@ async def verify_telegram_secret_token(request: Request, call_next):
     return response
 
 
-@app.post("/broadcasting-bot")
+@app.post("/broadcasting-bot") 
 async def forward_message(data: TelegramWebhook):
     """Endpoint to handle incoming Telegram webhook data."""
     try:
@@ -56,11 +56,11 @@ async def forward_message(data: TelegramWebhook):
             await handle_callback_query(data.callback_query)
             logger.info("Callback query handled successfully")
             return {"status": "ok", "message": "Callback query handled"}
-        
+         
         if data.message and data.message.get("new_chat_participant"):
-            group_data = data.message["chat"]
+            group_data = data.message["chat"] 
             add_group(group_data)
-        
+         
         if data.message:
             message = data.message
             await handle_message(message)
@@ -72,7 +72,8 @@ async def forward_message(data: TelegramWebhook):
 
     except Exception as e:
         logger.error(f"Error processing webhook data: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        # raise HTTPException(status_code=500, detail="Internal server error")
+        return {"status": "ok", "message": "Error processing webhook data"}
 
 
 @app.exception_handler(Exception)

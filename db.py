@@ -2,12 +2,19 @@ from pymongo import MongoClient
 from config import MONGO_CONNECTION_STRING
 
 client = MongoClient(MONGO_CONNECTION_STRING)
-db = client["csec-updater"]
+db = client["csec-updater-freshman"]
 
 # Collections
 groups_collection = db["groups"]
 admin_collection = db["admins"]
 state_collection = db["state"] 
+
+def initialize_db(bot_number):
+    global groups_collection, admin_collection, state_collection
+    groups_collection = db[f"groups_{bot_number}"]
+    admin_collection = db[f"admins_{bot_number}"]
+    state_collection = db[f"state_{bot_number}"]
+
 
 # Group management 
 

@@ -20,9 +20,9 @@ def send_group_list(chat_id, groups):
     return bot.send_message(chat_id=chat_id, text=header + group_list, parse_mode="HTML")
 
 def send_broadcast_prompt(chat_id):
-    return bot.send_message(chat_id=chat_id, text="Please send the message you want to broadcast.")
+    return bot.send_message(chat_id=chat_id, text="Please send me a message you want to broadcast or forward the message you want to broadcast from a channel in which I am an admin.")
 
-def send_confirmation_prompt(chat_id, message_id): 
+def send_confirmation_prompt(user_id, chat_id, message_id): 
     keyboard = [
         [
             InlineKeyboardButton("Yes", callback_data=f"forward:{chat_id}:{message_id}"),
@@ -30,7 +30,7 @@ def send_confirmation_prompt(chat_id, message_id):
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    return bot.send_message(chat_id=chat_id, text="Are you sure you want to send this message to all groups?", reply_markup=reply_markup)
+    return bot.send_message(chat_id=user_id, text="Are you sure you want to send this message to all groups?", reply_markup=reply_markup)
 
 
 async def send_admin_list_prompt(chat_id, admins):
@@ -38,4 +38,8 @@ async def send_admin_list_prompt(chat_id, admins):
     admin_list = "\n".join([f"<i>Username: @{admin['username']}</i> - Name: <code>{admin.get('first_name', 'NA')}</code>" for admin in admins])
     formatted_message = header + admin_list
     await bot.send_message(chat_id=chat_id, text=formatted_message, parse_mode="HTML")
+    
+    
+    
+
 

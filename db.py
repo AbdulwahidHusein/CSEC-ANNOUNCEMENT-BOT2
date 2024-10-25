@@ -2,8 +2,8 @@ from pymongo import MongoClient
 from config import MONGO_CONNECTION_STRING
 
 client = MongoClient(MONGO_CONNECTION_STRING)
-db = client["csec-updater-secondyr"]
-
+# db = client["csec-updater-secondyr"]
+db = client["csec-updater-firstyr"]
 # Collections
 groups_collection = db["groups"]
 admin_collection = db["admins"]

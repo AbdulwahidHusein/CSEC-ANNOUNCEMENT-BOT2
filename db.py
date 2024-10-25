@@ -7,15 +7,41 @@ db = client["csec-updater-secondyr"]
 # Collections
 groups_collection = db["groups"]
 admin_collection = db["admins"]
-state_collection = db["state"] 
+state_collection = db["state"]
 
-def initialize_db(bot_number):
-    global groups_collection, admin_collection, state_collection
-    groups_collection = db[f"groups_{bot_number}"]
-    admin_collection = db[f"admins_{bot_number}"]
-    state_collection = db[f"state_{bot_number}"]
+ready_messagesids_collection = db["ready_messages"]
 
+# def initialize_db(bot_number):
+#     global groups_collection, admin_collection, state_collection
+#     groups_collection = db[f"groups_{bot_number}"]
+#     admin_collection = db[f"admins_{bot_number}"]
+#     state_collection = db[f"state_{bot_number}"]
 
+def add_to_readymessageids(user_id, message_id):
+    """
+    Adds a message ID to the user's list of ready message IDs.
+    If the user does not exist, it creates a new document.
+    """
+    ready_messagesids_collection.update_one(
+        {"user_id": user_id},
+        {"$addToSet": {"message_ids": message_id}},
+        upsert=True
+    )
+
+def get_message_ids_by_user_id(user_id):
+    """
+    Retrieves the list of message IDs for the specified user_id.
+    Returns an empty list if the user does not exist.
+    """
+    user_data = ready_messagesids_collection.find_one({"user_id": user_id}, {"message_ids": 1})
+    return user_data["message_ids"] if user_data else []
+
+def delete_user_messages(user_id):
+    """
+    Deletes the entire document for the specified user.
+    """
+    ready_messagesids_collection.delete_one({"user_id": user_id})
+    
 # Group management 
 
 def add_group(group: dict):   
@@ -47,6 +73,16 @@ def is_admin_exists(admin_data):
 
 def get_admins():
     return list(admin_collection.find({}))
+
+def update_admin_info(user_info):
+    admin_data = None
+    admin_data =find_admin_by_username(user_info.get("username"))
+    if admin_data:
+        #update it
+        admin_data["id"] = user_info["id"]
+        admin_data['first_name'] = user_info.get('first_name')
+        admin_data['last_name'] = user_info.get('last_name')
+        admin_collection.update_one({"username": user_info.get("username")}, {"$set": admin_data})
 
 # State management
 def set_user_state(user_id, state):

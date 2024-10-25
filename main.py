@@ -1,14 +1,16 @@
 from fastapi import FastAPI, Request, Path
 from fastapi.responses import JSONResponse
 from models import TelegramWebhook
-from handlers import handle_message, handle_callback_query
+from handle_message import handle_message
+from handle_callback_query import handle_callback_query
 from db import add_group
 import config
 from telegram import Bot
 from logging import getLogger, StreamHandler, Formatter
 import logging
+from bot_utils import is_private_message, is_group_message, handle_reply
 
-# Initialize logger
+# Initialize logger 
 logger = getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -45,35 +47,40 @@ async def verify_telegram_secret_token(request: Request, call_next):
         return JSONResponse(status_code=403, content={"detail": "Unauthorized request"})
 
     response = await call_next(request)
+
     return response
+ 
 
 
-@app.post("/broadcasting-bot") 
+@app.post("/broadcasting-bot")  
 async def forward_message(data: TelegramWebhook):
     """Endpoint to handle incoming Telegram webhook data."""
     try:
         if data.callback_query:
             await handle_callback_query(data.callback_query)
             logger.info("Callback query handled successfully")
-            return {"status": "ok", "message": "Callback query handled"}
-         
-        if data.message and data.message.get("new_chat_participant"):
+        
+        elif is_group_message(data) or data.message and data.message.get("new_chat_participant"):
+      
             group_data = data.message["chat"] 
             add_group(group_data)
+            await handle_reply(data)    
+            
+        elif not is_private_message(data):
+            pass
          
-        if data.message:
+        elif data.message:
             message = data.message
             await handle_message(message)
             logger.info("Message handled successfully")
-            return {"status": "ok", "message": "Message handled"}
 
         logger.warning("No relevant message or callback query to process")
         return {"status": "ok", "message": "No relevant message to process"}
 
     except Exception as e:
         logger.error(f"Error processing webhook data: {e}")
-        # raise HTTPException(status_code=500, detail="Internal server error")
-        return {"status": "ok", "message": "Error processing webhook data"}
+        
+    return {"status": "ok"}
 
 
 @app.exception_handler(Exception)

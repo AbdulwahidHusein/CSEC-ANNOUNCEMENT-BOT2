@@ -3,12 +3,12 @@ from fastapi.responses import JSONResponse
 from models import TelegramWebhook
 from handle_message import handle_message
 from handle_callback_query import handle_callback_query
-from db import add_group
+from db import add_group, remove_group
 import config
 from telegram import Bot
 from logging import getLogger, StreamHandler, Formatter
 import logging
-from bot_utils import is_private_message, is_group_message, handle_reply
+from bot_utils import is_private_message, is_group_message, handle_reply, habdle_add_or_remove_group
 
 # Initialize logger 
 logger = getLogger(__name__)
@@ -55,23 +55,24 @@ async def verify_telegram_secret_token(request: Request, call_next):
 @app.post("/broadcasting-bot")  
 async def forward_message(data: TelegramWebhook):
     """Endpoint to handle incoming Telegram webhook data."""
+
     try:
         if data.callback_query:
             await handle_callback_query(data.callback_query)
             logger.info("Callback query handled successfully")
         
         elif is_group_message(data) or data.message and data.message.get("new_chat_participant"):
-      
-            group_data = data.message["chat"] 
-            add_group(group_data)
+                  
+            await habdle_add_or_remove_group(data)
             await handle_reply(data)    
             
-        elif not is_private_message(data):
-            pass
+        elif not is_private_message(data):   
+             
+            pass 
          
-        elif data.message:
-            message = data.message
-            await handle_message(message)
+        elif data.message:  
+            message = data.message 
+            await handle_message(message) 
             logger.info("Message handled successfully")
 
         logger.warning("No relevant message or callback query to process")

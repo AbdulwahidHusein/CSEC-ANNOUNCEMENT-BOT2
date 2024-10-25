@@ -1,7 +1,7 @@
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 from telegram.error import TelegramError
 from config import TOKEN
-from db import get_admins
+from db import get_admins, add_group, remove_group
 
 bot = Bot(token=TOKEN)
 
@@ -110,3 +110,15 @@ async def handle_reply(data):
     except Exception as e:
         pass
     return {"status": "ok"}
+
+
+async def habdle_add_or_remove_group(data):
+    group_data = data.message["chat"] 
+    
+    if 'left_chat_participant' in data.message:
+        await bot.initialize()
+        if bot.id == data.message['left_chat_participant']['id']:
+            remove_group(group_data['id'])
+    else:
+        add_group(group_data)
+            

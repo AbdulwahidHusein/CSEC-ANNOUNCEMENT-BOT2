@@ -52,6 +52,9 @@ def add_group(group: dict):
     }
     groups_collection.update_one({"id": group['id']}, {"$set": data}, upsert=True)
     
+def remove_group(group_id):
+    groups_collection.delete_one({"id": group_id})
+    
 def load_groups():
     return list(groups_collection.find({}))
 

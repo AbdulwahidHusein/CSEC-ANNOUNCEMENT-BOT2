@@ -7,7 +7,6 @@ from bot_utils import (
     send_confirmation_prompt, send_admin_list_prompt
 )
 from telegram.error import TelegramError
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 commands = ["/start", "/groups", "/broadcast", "/admins", "/addadmin", "/removeadmin"]
 

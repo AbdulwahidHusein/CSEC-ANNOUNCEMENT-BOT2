@@ -102,8 +102,8 @@ async def handle_admin_commans(text, chat_id, user_info):
     #     else:
     #         await bot.send_message(chat_id=chat_id, text="Here are the feedbacks:\n\n" + "\n".join(feedback['feedback_text'] for feedback in feedbacks))
     
-    return {"status": "ok"}
-
+    return {"status": "ok"} 
+ 
 
 async def handle_admin_addition(message, user_id, chat_id):
     """Handles the admin addition process based on user input."""

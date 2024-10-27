@@ -114,9 +114,10 @@ async def handle_reply(data):
                     if sent_count: 
                         
                         
-                        bot_username = "csec_updates2bot"
+                       
+                    
                         keyboard = [
-                            [InlineKeyboardButton("Give Feedback", url=f"https://t.me/{bot_username}")],
+                            [InlineKeyboardButton("Give Feedback", url=f"https://t.me/{bot.username}")],
                         ]
                         reply_markup = InlineKeyboardMarkup(keyboard)
 

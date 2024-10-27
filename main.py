@@ -85,7 +85,7 @@ async def forward_message(data: TelegramWebhook):
         
     return {"status": "ok"}
 
-@app.get('health')
+@app.get('/health')
 async def health_check():
     return {"status": "ok"}
 

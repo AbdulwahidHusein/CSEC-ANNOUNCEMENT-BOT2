@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from config import MONGO_CONNECTION_STRING
+from datetime import datetime
 
 client = MongoClient(MONGO_CONNECTION_STRING)
 # db = client["csec-updater-secondyr"]
@@ -8,6 +9,7 @@ db = client["csec-updater-firstyr"]
 groups_collection = db["groups"]
 admin_collection = db["admins"]
 state_collection = db["state"]
+feedback_collection = db["feedback"]
 
 ready_messagesids_collection = db["ready_messages"]
 
@@ -96,3 +98,28 @@ def get_user_state(user_id):
 
 def delete_user_state(user_id):
     state_collection.delete_one({"user_id": user_id})
+    
+    
+
+
+def add_feedback(feedback_data, user_info):
+    feedback = {
+        "user_id": user_info["id"],
+        "username": user_info.get("username"),
+        "first_name": user_info.get("first_name"),
+        "last_name": user_info.get("last_name"),
+        "feedback_text": feedback_data,
+        "timestamp": datetime.utcnow()  # Add current UTC timestamp
+    }
+    success = feedback_collection.insert_one(feedback)
+    return success.inserted_id
+
+def get_feedbacks():
+    # Get 20 most recent feedbacks based on timestamp
+    return list(
+        feedback_collection.find({})
+        .sort("timestamp", -1)
+        .limit(20)  
+    )
+
+   

@@ -6,11 +6,21 @@ from db import get_admins, add_group, remove_group
 bot = Bot(token=TOKEN)
 
 
+def send_admin_welcome_message(chat_id):
+    return bot.send_message(
+        chat_id=chat_id,
+        text="Welcome to the CSEC Updates announcement bot!",
+        reply_markup = ReplyKeyboardMarkup(
+            [["/groups", "/broadcast"], ["/admins", "/addadmin"]],
+            resize_keyboard=True
+        )
+    )
+
 def send_welcome_message(chat_id):
     return bot.send_message(
         chat_id=chat_id,
         text="Welcome to the CSEC Updates announcement bot!",
-        reply_markup=ReplyKeyboardMarkup([["/groups", "/broadcast", "/admins", "/addadmin"]], resize_keyboard=True)
+        reply_markup=ReplyKeyboardMarkup([["/Join our medias", "/Feedback", "/About us"]], resize_keyboard=True)
     )
 
 def send_group_list(chat_id, groups):
@@ -93,6 +103,7 @@ async def handle_reply(data):
                                 #     text="this is forwarded message"
                                 # )
                                
+                               
                             except TelegramError as e:
                                 pass
                                 # Log the error for specific admin, but continue the loop
@@ -100,12 +111,23 @@ async def handle_reply(data):
                                 #     chat_id=data.message['chat']['id'],
                                 #     text=f"Failed to forward message to {identifier}: {e}"
                                 # )
-                    if sent_count:
+                    if sent_count: 
+                        
+                        
+                        bot_username = "csec_updates2bot"
+                        keyboard = [
+                            [InlineKeyboardButton("Give Feedback", url=f"https://t.me/{bot_username}")],
+                        ]
+                        reply_markup = InlineKeyboardMarkup(keyboard)
+
+                        # Send the message with the inline keyboard
                         await bot.send_message(
                             chat_id=data.message['chat']['id'],
-                            text=f"Hey {data.message['from']['first_name']} We have received your message and our team will get back to you shortly",
-                            reply_to_message_id=data.message['message_id']
+                            text=f"Hey {data.message['from']['first_name']}, You can send us a message using this link.",
+                            reply_to_message_id=data.message['message_id'],
+                            reply_markup=reply_markup
                         )
+            
                                 
     except Exception as e:
         pass

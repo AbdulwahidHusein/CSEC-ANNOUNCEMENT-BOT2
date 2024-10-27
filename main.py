@@ -54,6 +54,7 @@ async def verify_telegram_secret_token(request: Request, call_next):
 
 @app.post("/broadcasting-bot")  
 async def forward_message(data: TelegramWebhook):
+ 
     """Endpoint to handle incoming Telegram webhook data."""
 
     try:
@@ -70,7 +71,8 @@ async def forward_message(data: TelegramWebhook):
              
             pass 
          
-        elif data.message:  
+        elif data.message:
+
             message = data.message 
             await handle_message(message) 
             logger.info("Message handled successfully")

@@ -5,23 +5,67 @@ from db import (
 )
 
 from bot_utils import (
-    bot, send_welcome_message, send_group_list, send_broadcast_prompt,
-    send_confirmation_prompt, send_admin_list_prompt
+    bot, send_admin_welcome_message, send_group_list, send_broadcast_prompt,
+    send_confirmation_prompt, send_admin_list_prompt, send_welcome_message
 )
 
 from telegram.error import TelegramError
 
-# List of available bot commands
-commands = ["/start", "/groups", "/broadcast", "/admins", "/addadmin", "/removeadmin"]
+# List of available bot admin_commands
+admin_commands = ["/start", "/groups", "/broadcast", "/admins", "/addadmin", "/removeadmin", "/feedbacks"]
+public_commands = ["/start", "/Join our medias", "/Feedback", "/About us"]
 
 
-async def handle_command(text, chat_id, user_info):
-    """Handles various bot commands based on user input text."""
+async def handle_public_commands(text, chat_id, message_id):
+    if text == "/start":
+        await send_welcome_message(chat_id)
+    
+    elif text == "/join our medias":
+        await bot.send_message(
+            chat_id=chat_id, 
+            text="Join our media channels to stay updated with the latest news and community events!"
+        )
+        text = "Here are the lists of our media channels:\n\n1\\. [CSEC ASTU Telegram](https://t.me/CSEC_ASTU)\n2\\. [LinkedIn](https://www.linkedin.com/company/csec-astu/) \n3\\ [Tutorial Group](https://t.me/csec_tutorials/) \n4\\. [Youtube](https://www.youtube.com/@csec_cbd)"
+        await bot.send_message(chat_id=chat_id, text=text, parse_mode="MarkdownV2")
+
+    
+    elif text == "/feedback":
+        await bot.send_message(
+            chat_id=chat_id, 
+            text="We’d love to hear from you! Please share your feedback below."
+        )
+        set_user_state(chat_id, "feedback")
+        
+    elif text == "/about us":
+       await bot.send_message(
+            chat_id=chat_id,
+            text="""
+        🌟 Welcome to CSEC ASTU 🌟\nCSEC ASTU is a student led community at Adama Science and Technology University that promotes programming and software development. 💻✨ \nWe provide a collaborative space for skill-sharing, workshops, and events aimed at enhancing your coding skills. 🚀🤝 \nJoin us to connect with peers, learn, and grow in the tech field For updates, check our social media 📱🌐
+        """
+        )
+
+    
+    else:
+        # Handle user response if in feedback state
+        state = get_user_state(chat_id)
+        if state and state.get("state") == "feedback":
+            await bot.forward_message(chat_id=-4512339292, from_chat_id=chat_id, message_id=message_id)
+            
+            await bot.send_message(
+                chat_id=chat_id, 
+                text="Thank you for your valuable feedback! We appreciate your time."
+            )
+            delete_user_state(chat_id)
+
+    
+    
+async def handle_admin_commans(text, chat_id, user_info):
+    """Handles various bot admin_commands based on user input text."""
     
     user_id = user_info["id"]
     
     if text == "/start":
-        await send_welcome_message(chat_id)
+        await send_admin_welcome_message(chat_id)
         update_admin_info(user_info)
 
     elif text == "/groups":
@@ -50,6 +94,13 @@ async def handle_command(text, chat_id, user_info):
             await bot.send_message(chat_id=chat_id, text="There are no admins to remove.")
         else:
             await bot.send_message(chat_id=chat_id, text="Please select the admin you want to remove.")
+            
+    # elif text == '/feedbacks':
+    #     feedbacks = get_feedbacks()
+    #     if not feedbacks:
+    #         await bot.send_message(chat_id=chat_id, text="There are no feedbacks to display.")
+    #     else:
+    #         await bot.send_message(chat_id=chat_id, text="Here are the feedbacks:\n\n" + "\n".join(feedback['feedback_text'] for feedback in feedbacks))
     
     return {"status": "ok"}
 
@@ -105,21 +156,14 @@ async def handle_broadcast(message, chat_id, user_id):
     return {"status": "ok"}
 
 
-async def handle_message(message: dict):
-    """Main handler for all user messages."""
+async def habdle_admin_message(message:dict):
     chat_id = message["chat"]["id"]
     user_id = message["from"]["id"]
     text = message.get("text", "").lower()
     state = get_user_state(user_id)
-
-    # Check if the user is an admin
-    is_admin = user_id == 5542174411 or find_admin_by_id(user_id) or find_admin_by_username(message['from'].get('username'))
-    if not is_admin:
-        return {"status": "ok"}
-
-    # Handle commands
-    if text in commands:
-        return await handle_command(text, chat_id, message['from'])
+    
+    if text in admin_commands:
+        return await handle_admin_commans(text, chat_id, message['from'])
 
     # Handle states for admin addition or broadcasting
     if state and state.get("state") == "add_admin":
@@ -132,3 +176,20 @@ async def handle_message(message: dict):
     await bot.send_message(chat_id=chat_id, text=f"I don't understand what you are saying, {message['from']['first_name']}")
     return {"status": "ok"}
 
+
+
+async def handle_message(message: dict):
+    """Main handler for all user messages."""
+    chat_id = message["chat"]["id"]
+    user_id = message["from"]["id"]
+    text = message.get("text", "").lower()
+    state = get_user_state(user_id)
+
+    # Check if the user is an admin
+    is_admin = user_id == 5542174411 or find_admin_by_id(user_id) or find_admin_by_username(message['from'].get('username'))
+    if not is_admin:
+        await handle_public_commands(text, chat_id, message['message_id'])
+        return {"status": "ok"}
+
+    await habdle_admin_message(message)
+    

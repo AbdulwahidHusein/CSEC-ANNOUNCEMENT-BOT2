@@ -85,6 +85,9 @@ async def forward_message(data: TelegramWebhook):
         
     return {"status": "ok"}
 
+@app.get('health')
+async def health_check():
+    return {"status": "ok"}
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
